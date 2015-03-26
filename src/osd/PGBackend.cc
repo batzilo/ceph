@@ -540,6 +540,7 @@ map<pg_shard_t, ScrubMap *>::const_iterator
 void PGBackend::be_compare_scrubmaps(
   const map<pg_shard_t,ScrubMap*> &maps,
   bool okseed,
+  bool repair,
   map<hobject_t, set<pg_shard_t> > &missing,
   map<hobject_t, set<pg_shard_t> > &inconsistent,
   map<hobject_t, list<pg_shard_t> > &authoritative,
@@ -641,6 +642,8 @@ void PGBackend::be_compare_scrubmaps(
 	errorstream << __func__ << ": " << pgid << " recorded data digest 0x"
 		    << std::hex << auth_oi.data_digest << " != on disk 0x"
 		    << auth_object.digest << std::dec << " on " << auth_oi.soid;
+	if (repair)
+	  update = true;
       }
       if (auth_oi.is_omap_digest() && auth_object.omap_digest_present &&
 	  auth_oi.omap_digest != auth_object.omap_digest) {
@@ -648,6 +651,8 @@ void PGBackend::be_compare_scrubmaps(
 	errorstream << __func__ << ": " << pgid << " recorded omap digest 0x"
 		    << std::hex << auth_oi.data_digest << " != on disk 0x"
 		    << auth_object.digest << std::dec << " on " << auth_oi.soid;
+	if (repair)
+	  update = true;
       }
 
       if (auth_object.digest_present && auth_object.omap_digest_present &&
